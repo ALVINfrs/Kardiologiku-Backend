@@ -1,2 +1,11 @@
+# Folder dependensi
 node_modules
+
+# Folder hasil kompilasi TypeScript
+dist
+
+# File environment variables
 .env
+
+# Log file
+npm-debug.log
