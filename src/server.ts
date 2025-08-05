@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import healthRoutes from "./routes/healthRoutes";
+import foodRoutes from "./routes/foodRoutes";
 
 // 1. Impor fungsi yang sudah kita ekspor
 import { testDbConnection } from "./config/database";
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/health", healthRoutes);
+app.use("/api/food", foodRoutes);
 
 app.get("/", (req, res) => {
   res.send("Selamat datang di Kardiologiku API!");
