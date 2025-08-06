@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import foodRoutes from "./routes/foodRoutes";
+import medicationRoutes from "./routes/medicationRoutes";
+import doctorRoutes from "./routes/doctorRoutes";
 
 // 1. Impor fungsi yang sudah kita ekspor
 import { testDbConnection } from "./config/database";
@@ -16,6 +18,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/food", foodRoutes);
+app.use("/api/medications", medicationRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 app.get("/", (req, res) => {
   res.send("Selamat datang di Kardiologiku API!");
