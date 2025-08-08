@@ -6,6 +6,7 @@ import foodRoutes from "./routes/foodRoutes";
 import medicationRoutes from "./routes/medicationRoutes";
 import doctorRoutes from "./routes/doctorRoutes";
 import articleRoutes from "./routes/articleRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 // 1. Impor fungsi yang sudah kita ekspor
 import { testDbConnection } from "./config/database";
@@ -22,6 +23,7 @@ app.use("/api/food", foodRoutes);
 app.use("/api/medications", medicationRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/articles", articleRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Selamat datang di Kardiologiku API!");
