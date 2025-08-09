@@ -7,6 +7,8 @@ import medicationRoutes from "./routes/medicationRoutes";
 import doctorRoutes from "./routes/doctorRoutes";
 import articleRoutes from "./routes/articleRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import notificationRoutes from "./routes/notificationRoutes"; // <-- Impor route baru
+import { startScheduledJobs } from "./services/cronJobs"; // <-- Impor cron job
 
 // 1. Impor fungsi yang sudah kita ekspor
 import { testDbConnection } from "./config/database";
@@ -14,7 +16,7 @@ import { testDbConnection } from "./config/database";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
@@ -24,6 +26,7 @@ app.use("/api/medications", medicationRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Selamat datang di Kardiologiku API!");
@@ -33,6 +36,8 @@ app.get("/", (req, res) => {
 const startServer = async () => {
   // Panggil tes koneksi terlebih dahulu
   await testDbConnection();
+
+  startScheduledJobs();
 
   // Jika koneksi berhasil, baru jalankan server
   app.listen(PORT, () => {
