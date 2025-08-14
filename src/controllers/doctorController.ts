@@ -77,15 +77,9 @@ export const addReview = async (req: Request, res: Response) => {
 // Membuat janji temu
 export const bookAppointment = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.user!.id);
-    if (isNaN(userId))
-      return res.status(400).json({ message: "Invalid User ID" });
-
-    const doctorId = parseInt(req.params.doctorId);
-    if (isNaN(doctorId))
-      return res.status(400).json({ message: "Invalid Doctor ID" });
-
-    const { appointmentDate, notes } = req.body;
+    const userId = Number(req.user!.id);
+    const doctorId = parseInt(req.params.doctorId, 10);
+    const { appointmentDate, notes } = req.body; // Contoh `appointmentDate`: "2025-12-25 10:00:00"
 
     if (!appointmentDate) {
       return res.status(400).json({ message: "Appointment date is required" });
@@ -94,7 +88,6 @@ export const bookAppointment = async (req: Request, res: Response) => {
     await Doctor.createAppointment(userId, doctorId, appointmentDate, notes);
     res.status(201).json({ message: "Appointment booked successfully" });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Server error while booking appointment" });
   }
 };
@@ -164,11 +157,8 @@ export const getAvailableSlots = async (req: Request, res: Response) => {
 // (Untuk Admin) Mengatur jadwal ketersediaan dokter
 export const setDoctorAvailability = async (req: Request, res: Response) => {
   try {
-    const doctorId = parseInt(req.params.doctorId);
-    if (isNaN(doctorId))
-      return res.status(400).json({ message: "Invalid Doctor ID" });
-
-    const { availability } = req.body;
+    const doctorId = parseInt(req.params.doctorId, 10);
+    const { availability } = req.body; // array of { day_of_week, start_time, end_time }
 
     if (!Array.isArray(availability)) {
       return res.status(400).json({ message: "Availability must be an array" });

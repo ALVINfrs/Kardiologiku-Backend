@@ -4,7 +4,7 @@ import { Medication } from "../models/Medication";
 // Mendapatkan semua obat milik pengguna
 export const getMedications = async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = Number(req.user!.id);
     const medications = await Medication.findByUserId(userId);
     res.status(200).json(medications);
   } catch (error) {
@@ -36,15 +36,15 @@ export const addMedication = async (req: Request, res: Response) => {
 // Mengupdate obat
 export const updateMedication = async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
-    const { medId } = req.params;
+    const userId = Number(req.user!.id);
+    const medId = parseInt(req.params.medId, 10);
     const { name, dosage, stock, notes } = req.body;
 
     if (!name && !dosage && stock === undefined && !notes) {
       return res.status(400).json({ message: "Tidak ada data untuk diupdate" });
     }
 
-    await Medication.update(parseInt(medId), userId, req.body);
+    await Medication.update(medId, userId, req.body);
     res.status(200).json({ message: "Obat berhasil diperbarui" });
   } catch (error) {
     res.status(500).json({ message: "Server error while updating medication" });
@@ -54,9 +54,9 @@ export const updateMedication = async (req: Request, res: Response) => {
 // Menghapus obat
 export const deleteMedication = async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
-    const { medId } = req.params;
-    await Medication.delete(parseInt(medId), userId);
+    const userId = Number(req.user!.id);
+    const medId = parseInt(req.params.medId, 10);
+    await Medication.delete(medId, userId);
     res.status(200).json({ message: "Obat berhasil dihapus" });
   } catch (error) {
     res.status(500).json({ message: "Server error while deleting medication" });
@@ -66,9 +66,9 @@ export const deleteMedication = async (req: Request, res: Response) => {
 // Mencatat obat telah diminum
 export const logMedicationTaken = async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
-    const { medId } = req.params;
-    await Medication.logTaken(userId, parseInt(medId));
+    const userId = Number(req.user!.id);
+    const medId = parseInt(req.params.medId, 10);
+    await Medication.logTaken(userId, medId);
     res.status(200).json({ message: "Obat berhasil dicatat telah diminum" });
   } catch (error) {
     res.status(500).json({ message: "Server error while logging medication" });
