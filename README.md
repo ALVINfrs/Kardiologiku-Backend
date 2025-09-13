@@ -275,3 +275,601 @@ Mendapatkan seluruh riwayat data kesehatan milik pengguna yang sedang login.
     - `401 Unauthorized`: Jika token tidak valid atau tidak ada.
 
 *(Endpoint lainnya akan mengikuti format detail yang sama...)*
+
+### Modul: Makanan & Nutrisi (`/api/food`)
+
+Semua endpoint dalam modul ini memerlukan autentikasi.
+
+-   **Headers**: `Authorization: Bearer <token>` (required)
+
+#### `GET /api/food/search`
+Mencari makanan dari database global dan makanan kustom yang ditambahkan oleh pengguna.
+
+-   **Query Parameters**:
+    - `q` (string, optional): Kata kunci pencarian. Jika kosong, akan mengembalikan semua makanan kustom milik pengguna dan beberapa makanan global sebagai rekomendasi.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 101,
+        "name": "Nasi Putih",
+        "calories": 130,
+        "sodium": 5,
+        "potassium": 35,
+        "fat": 0.3,
+        "protein": 2.7,
+        "carbs": 28,
+        "category": "Pokok"
+      },
+      {
+        "id": 552,
+        "name": "Salad Buah Kustom",
+        "calories": 150,
+        "sodium": 10,
+        // ... properti lainnya
+        "user_id": 1 // Muncul jika ini makanan kustom
+      }
+    ]
+    ```
+
+#### `POST /api/food/custom`
+Menambahkan entri makanan baru yang spesifik untuk pengguna (misal: resep pribadi).
+
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "name": "Salad Buah Kustom",
+      "calories": 150,
+      "sodium": 10,
+      "potassium": 200,
+      "fat": 2,
+      "protein": 1,
+      "carbs": 35,
+      "category": "Buah"
+    }
+    ```
+    - `name`, `calories`, `sodium` adalah wajib.
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Makanan kustom berhasil ditambahkan" }
+    ```
+
+-   **Error Response (400 Bad Request)**: Jika data wajib tidak diisi.
+
+#### `POST /api/food/log`
+Mencatat makanan yang dikonsumsi oleh pengguna pada tanggal dan waktu makan tertentu.
+
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "food_id": 101,
+      "meal_type": "Makan Siang",
+      "portion": 1.5,
+      "log_date": "2025-09-13"
+    }
+    ```
+    - `food_id` (number, required): ID dari makanan (bisa dari global atau kustom).
+    - `meal_type` (string, required): e.g., "Sarapan", "Makan Siang", "Makan Malam", "Camilan".
+    - `portion` (number, optional, default: 1): Porsi yang dikonsumsi.
+    - `log_date` (string, required): Tanggal konsumsi dalam format `YYYY-MM-DD`.
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Makanan berhasil dicatat" }
+    ```
+
+#### `GET /api/food/log`
+Mengambil riwayat catatan makanan pengguna untuk tanggal tertentu.
+
+-   **Query Parameters**:
+    - `date` (string, optional): Tanggal dalam format `YYYY-MM-DD`. Jika tidak disediakan, akan menggunakan tanggal hari ini.
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "summary": {
+        "total_calories": 1800,
+        "total_sodium": 1200,
+        // ... ringkasan nutrisi lainnya
+      },
+      "logs": [
+        {
+          "log_id": 1,
+          "meal_type": "Sarapan",
+          "food_name": "Roti Gandum",
+          "calories": 150,
+          "portion": 2
+          // ... detail lainnya
+        },
+        {
+          "log_id": 2,
+          "meal_type": "Makan Siang",
+          "food_name": "Nasi Putih",
+          "calories": 260,
+          "portion": 2
+        }
+      ]
+    }
+    ```
+
+#### `DELETE /api/food/log/:logId`
+Menghapus satu entri catatan makanan dari riwayat pengguna.
+
+-   **URL Parameters**:
+    - `logId` (number, required): ID dari catatan log makanan yang ingin dihapus.
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Catatan makanan berhasil dihapus" }
+    ```
+
+-   **Error Response (404 Not Found)**: Jika `logId` tidak ditemukan atau bukan milik pengguna.
+
+### Modul: Manajemen Obat (`/api/medications`)
+
+Endpoint untuk mengelola daftar obat-obatan pribadi pengguna. Semua endpoint dalam modul ini memerlukan autentikasi.
+
+-   **Headers**: `Authorization: Bearer <token>` (required)
+
+#### `GET /api/medications`
+Mengambil daftar semua obat yang terdaftar untuk pengguna yang sedang login.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "user_id": 1,
+        "name": "Aspirin",
+        "dosage": "81mg",
+        "stock": 50,
+        "notes": "Minum setiap pagi setelah makan.",
+        "created_at": "2025-09-10T08:00:00.000Z"
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "name": "Lisinopril",
+        "dosage": "10mg",
+        "stock": 25,
+        "notes": "Minum sebelum tidur.",
+        "created_at": "2025-09-10T08:05:00.000Z"
+      }
+    ]
+    ```
+
+#### `POST /api/medications`
+Menambahkan obat baru ke dalam daftar pengguna.
+
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "name": "Simvastatin",
+      "dosage": "20mg",
+      "stock": 30,
+      "notes": "Minum malam hari."
+    }
+    ```
+    - `name`, `dosage`, `stock` adalah wajib.
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Obat berhasil ditambahkan" }
+    ```
+
+#### `PUT /api/medications/:medId`
+Memperbarui detail obat yang sudah ada (misal: mengubah dosis, memperbarui stok).
+
+-   **URL Parameters**:
+    - `medId` (number, required): ID dari obat yang ingin diperbarui.
+-   **Request Body**: `application/json` (kirim hanya field yang ingin diubah)
+    ```json
+    {
+      "stock": 25,
+      "notes": "Stok baru, minum setelah makan malam."
+    }
+    ```
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Obat berhasil diperbarui" }
+    ```
+
+#### `DELETE /api/medications/:medId`
+Menghapus obat dari daftar pengguna.
+
+-   **URL Parameters**:
+    - `medId` (number, required): ID dari obat yang ingin dihapus.
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Obat berhasil dihapus" }
+    ```
+
+#### `POST /api/medications/:medId/log`
+Mencatat bahwa pengguna telah meminum obat pada waktu tertentu. Aksi ini biasanya akan mengurangi `stock` sebanyak 1.
+
+-   **URL Parameters**:
+    - `medId` (number, required): ID dari obat yang diminum.
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Obat berhasil dicatat telah diminum" }
+    ```
+
+### Modul: Dokter & Janji Temu (`/api/doctors`)
+
+Menyediakan informasi mengenai dokter, ulasan, dan fungsionalitas untuk membuat janji temu.
+
+#### `GET /api/doctors`
+[Publik] Mengambil daftar semua dokter yang terdaftar di platform.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "name": "Dr. Budi Santoso, Sp.JP",
+        "specialization": "Kardiologi",
+        "hospital": "RS Jantung Harapan Kita",
+        "profile_picture_url": "https://example.com/images/dr_budi.jpg"
+      }
+    ]
+    ```
+
+#### `GET /api/doctors/:doctorId`
+[Publik] Mengambil detail lengkap seorang dokter, termasuk rata-rata rating dan daftar ulasannya.
+
+-   **URL Parameters**:
+    - `doctorId` (number, required): ID dokter.
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "id": 1,
+      "name": "Dr. Budi Santoso, Sp.JP",
+      "specialization": "Kardiologi",
+      "hospital": "RS Jantung Harapan Kita",
+      "about": "Dr. Budi adalah seorang spesialis jantung dengan pengalaman 15 tahun...",
+      "average_rating": 4.8,
+      "reviews": [
+        {
+          "reviewer_name": "Anisa",
+          "rating": 5,
+          "comment": "Penjelasan dokter sangat mudah dipahami.",
+          "created_at": "2025-09-12T14:00:00.000Z"
+        }
+      ]
+    }
+    ```
+
+#### `GET /api/doctors/:doctorId/slots`
+[Publik] Mendapatkan daftar slot waktu yang tersedia untuk konsultasi dengan dokter pada tanggal tertentu.
+
+-   **URL Parameters**:
+    - `doctorId` (number, required): ID dokter.
+-   **Query Parameters**:
+    - `date` (string, required): Tanggal yang diinginkan dalam format `YYYY-MM-DD`.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      "09:00",
+      "09:30",
+      "11:00",
+      "14:00",
+      "14:30"
+    ]
+    ```
+
+#### `POST /api/doctors/:doctorId/reviews`
+[Login Dibutuhkan] Menambahkan ulasan dan rating baru untuk seorang dokter.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **URL Parameters**: `doctorId` (number, required)
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "rating": 5,
+      "comment": "Sangat puas dengan pelayanan Dr. Budi."
+    }
+    ```
+    - `rating` (number, required): Angka antara 1 hingga 5.
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Review added successfully" }
+    ```
+
+#### `POST /api/doctors/:doctorId/appointments`
+[Login Dibutuhkan] Membuat jadwal janji temu baru dengan dokter.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **URL Parameters**: `doctorId` (number, required)
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "appointmentDate": "2025-09-20 11:00:00",
+      "notes": "Ingin konsultasi hasil EKG terbaru."
+    }
+    ```
+    - `appointmentDate` (string, required): Waktu janji temu yang pasti (diambil dari slot yang tersedia) dalam format `YYYY-MM-DD HH:MM:SS`.
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Appointment booked successfully" }
+    ```
+
+#### `PUT /api/doctors/:doctorId/availability`
+[Admin] Mengatur atau memperbarui jadwal ketersediaan mingguan seorang dokter.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **URL Parameters**: `doctorId` (number, required)
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "availability": [
+        { "day_of_week": 1, "start_time": "09:00", "end_time": "17:00" }, // Senin
+        { "day_of_week": 3, "start_time": "09:00", "end_time": "13:00" }  // Rabu
+      ]
+    }
+    ```
+    - `day_of_week`: 0 untuk Minggu, 1 untuk Senin, dst.
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Doctor availability updated successfully" }
+    ```
+
+### Modul: Artikel Kesehatan (`/api/articles`)
+
+Menyediakan akses ke artikel-artikel informatif seputar kesehatan jantung.
+
+#### `GET /api/articles`
+[Publik] Mengambil daftar semua artikel yang telah dipublikasikan. Respons hanya berisi data ringkas seperti judul, slug, dan ringkasan.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "title": "10 Makanan Sehat untuk Jantung Anda",
+        "slug": "10-makanan-sehat-untuk-jantung-anda",
+        "excerpt": "Jantung yang sehat dimulai dari apa yang Anda makan. Berikut adalah 10 makanan terbaik...",
+        "published_at": "2025-09-11T10:00:00.000Z"
+      }
+    ]
+    ```
+
+#### `GET /api/articles/:slug`
+[Publik] Mengambil konten lengkap dari satu artikel berdasarkan `slug`-nya.
+
+-   **URL Parameters**:
+    - `slug` (string, required): Slug unik dari artikel.
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "id": 1,
+      "title": "10 Makanan Sehat untuk Jantung Anda",
+      "slug": "10-makanan-sehat-untuk-jantung-anda",
+      "content": "<p>Jantung yang sehat dimulai dari apa yang Anda makan...</p>",
+      "author_name": "Dr. Fitri",
+      "published_at": "2025-09-11T10:00:00.000Z"
+    }
+    ```
+
+#### `POST /api/articles`
+[Admin] Membuat artikel baru. Endpoint ini seharusnya hanya bisa diakses oleh admin.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "title": "Pentingnya Olahraga Kardio",
+      "content": "<p>Olahraga kardio seperti lari atau berenang sangat penting untuk...</p>",
+      "excerpt": "Kenali manfaat olahraga kardio untuk kesehatan jantung Anda.",
+      "author_id": 2, // ID dari user admin
+      "status": "published"
+    }
+    ```
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Article created successfully" }
+    ```
+
+### Modul: Administrasi (`/api/admin`)
+
+Kumpulan endpoint yang hanya dapat diakses oleh pengguna dengan peran `admin`. Semua endpoint di sini secara otomatis terproteksi oleh middleware `protect` dan `isAdmin`.
+
+-   **Headers**: `Authorization: Bearer <token>` (required)
+
+#### `GET /api/admin/stats`
+[Admin] Mengambil data statistik ringkas untuk ditampilkan di dasbor admin.
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "totalUsers": 150,
+      "totalDoctors": 12,
+      "totalArticles": 25
+    }
+    ```
+
+#### `GET /api/admin/users`
+[Admin] Mengambil daftar semua pengguna yang terdaftar di sistem.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "name": "Alvin",
+        "email": "alvin.doe@example.com",
+        "role": "user",
+        "created_at": "2025-09-10T12:00:00.000Z"
+      },
+      {
+        "id": 2,
+        "name": "Admin Fitri",
+        "email": "fitri.admin@example.com",
+        "role": "admin",
+        "created_at": "2025-09-09T10:00:00.000Z"
+      }
+    ]
+    ```
+
+### Modul: Notifikasi (`/api/notifications`)
+
+Mengelola notifikasi untuk pengguna, seperti pengingat obat, laporan mingguan siap, dll. Semua endpoint memerlukan autentikasi.
+
+-   **Headers**: `Authorization: Bearer <token>` (required)
+
+#### `GET /api/notifications`
+Mengambil semua notifikasi (baik yang sudah dibaca maupun yang belum) untuk pengguna yang login.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "user_id": 1,
+        "message": "Peringatan: Stok obat Aspirin Anda akan segera habis.",
+        "is_read": false,
+        "created_at": "2025-09-13T08:00:00.000Z"
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "message": "Laporan kesehatan mingguan Anda telah siap.",
+        "is_read": true,
+        "created_at": "2025-09-12T20:00:00.000Z"
+      }
+    ]
+    ```
+
+#### `POST /api/notifications/:notificationId/read`
+Menandai satu notifikasi spesifik sebagai "telah dibaca".
+
+-   **URL Parameters**:
+    - `notificationId` (number, required): ID dari notifikasi yang ingin ditandai.
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Notification marked as read" }
+    ```
+
+#### `POST /api/notifications/read-all`
+Menandai semua notifikasi yang belum dibaca milik pengguna sebagai "telah dibaca".
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "All notifications marked as read" }
+    ```
+
+### Modul: Laporan Kesehatan (`/api/reports`)
+
+Endpoint untuk mengakses laporan kesehatan mingguan yang dibuat secara otomatis oleh sistem.
+
+-   **Headers**: `Authorization: Bearer <token>` (required)
+
+#### `GET /api/reports`
+Mengambil riwayat semua laporan kesehatan mingguan milik pengguna.
+
+-   **Success Response (200 OK)**
+    ```json
+    [
+      {
+        "id": 1,
+        "user_id": 1,
+        "week_start_date": "2025-09-08",
+        "week_end_date": "2025-09-14",
+        "summary_text": "Tekanan darah Anda minggu ini sedikit di atas rata-rata. Detak jantung stabil.",
+        "avg_systolic": 135,
+        "avg_diastolic": 85,
+        "avg_heart_rate": 78,
+        "created_at": "2025-09-14T20:00:00.000Z"
+      }
+    ]
+    ```
+
+### Modul: Tips Kesehatan (`/api/tips`)
+
+Menyajikan tips kesehatan singkat yang bisa diakses oleh pengguna.
+
+#### `GET /api/tips/today`
+[Publik] Mengambil "Tip of the Day" yang dipilih secara acak oleh sistem setiap hari.
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "id": 42,
+      "tip": "Jangan lupa minum air putih minimal 8 gelas sehari untuk menjaga hidrasi dan kesehatan jantung.",
+      "category": "Gaya Hidup"
+    }
+    ```
+
+#### `GET /api/tips/random`
+[Publik] Mengambil satu tips kesehatan secara acak. Bisa difilter berdasarkan kategori.
+
+-   **Query Parameters**:
+    - `category` (string, optional): e.g., "Diet", "Olahraga", "Gaya Hidup".
+
+-   **Success Response (200 OK)**
+    ```json
+    {
+      "id": 15,
+      "tip": "Batasi konsumsi garam tidak lebih dari 1 sendok teh per hari.",
+      "category": "Diet"
+    }
+    ```
+
+#### `GET /api/tips`
+[Admin] Mengambil daftar semua tips kesehatan yang ada di database.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **Success Response (200 OK)**: Array objek tips seperti pada `/api/tips/random`.
+
+#### `POST /api/tips`
+[Admin] Membuat tips kesehatan baru.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **Request Body**: `application/json`
+    ```json
+    {
+      "tip": "Lakukan peregangan ringan selama 5 menit setiap jam jika Anda bekerja di depan komputer.",
+      "category": "Gaya Hidup"
+    }
+    ```
+
+-   **Success Response (201 Created)**
+    ```json
+    { "message": "Health tip created successfully." }
+    ```
+
+#### `PUT /api/tips/:tipId`
+[Admin] Memperbarui konten atau kategori dari tips yang sudah ada.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **URL Parameters**: `tipId` (number, required)
+-   **Request Body**: `application/json` (sama seperti POST)
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Health tip updated successfully." }
+    ```
+
+#### `DELETE /api/tips/:tipId`
+[Admin] Menghapus sebuah tips dari database.
+
+-   **Headers**: `Authorization: Bearer <token>`
+-   **URL Parameters**: `tipId` (number, required)
+
+-   **Success Response (200 OK)**
+    ```json
+    { "message": "Health tip deleted successfully." }
+    ```
+
