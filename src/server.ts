@@ -10,7 +10,7 @@ import adminRoutes from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes"; // <-- Impor route baru
 import { startScheduledJobs } from "./services/cronJobs"; // <-- Impor cron job
 import healthTipRoutes from "./routes/healthTipRoutes";
-
+import reportRoutes from "./routes/reportRoutes";
 // 1. Impor fungsi yang sudah kita ekspor
 import { testDbConnection } from "./config/database";
 
@@ -28,7 +28,7 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
-
+app.use("/api/reports", reportRoutes);
 app.use("/api/tips", healthTipRoutes);
 app.get("/", (req, res) => {
   res.send("Selamat datang di Kardiologiku API!");
