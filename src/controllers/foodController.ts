@@ -4,7 +4,7 @@ import { Food } from "../models/Food";
 // ... (fungsi searchFood dan addCustomFood tetap sama)
 
 export const searchFood = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = Number(req.user!.id);
   const searchTerm = (req.query.q as string) || "";
 
   try {
@@ -17,7 +17,7 @@ export const searchFood = async (req: Request, res: Response) => {
 };
 
 export const addCustomFood = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = Number(req.user!.id);
   const { name, calories, sodium, potassium, fat, protein, carbs, category } =
     req.body;
 
@@ -38,7 +38,7 @@ export const addCustomFood = async (req: Request, res: Response) => {
 
 // --- PERBAIKAN UTAMA ADA DI FUNGSI INI ---
 export const logFood = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = Number(req.user!.id);
   const { food_id, meal_type, portion, log_date } = req.body;
 
   if (!food_id || !meal_type || !log_date) {
@@ -64,9 +64,9 @@ export const logFood = async (req: Request, res: Response) => {
     // Gunakan tanggal yang sudah diformat
     await Food.log({
       user_id: userId,
-      food_id,
+      food_id: Number(food_id),
       meal_type,
-      portion,
+      portion: Number(portion),
       log_date: formattedDate,
     });
     res.status(201).json({ message: "Makanan berhasil dicatat" });
@@ -79,7 +79,7 @@ export const logFood = async (req: Request, res: Response) => {
 // ... (fungsi getDailyLog dan deleteFoodLog tetap sama)
 
 export const getDailyLog = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = Number(req.user!.id);
   const date =
     (req.query.date as string) || new Date().toISOString().split("T")[0];
 
@@ -93,7 +93,7 @@ export const getDailyLog = async (req: Request, res: Response) => {
 };
 
 export const deleteFoodLog = async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = Number(req.user!.id);
   const { logId } = req.params;
 
   try {

@@ -3,15 +3,22 @@ import jwt from "jsonwebtoken";
 
 // Definisikan interface untuk payload token kita
 interface TokenPayload {
-  id: number;
-  name: string;
+  id: string; // Ubah ke string untuk match dengan Express.TokenPayload
+  email: string;
+  role: string;
   iat: number;
   exp: number;
 }
 
-// Tambahkan properti 'user' ke dalam interface Request dari Express
 declare global {
   namespace Express {
+    interface TokenPayload {
+      id: string;
+      email: string;
+      role: string;
+      iat: number;
+      exp: number;
+    }
     interface Request {
       user?: TokenPayload;
     }
@@ -37,8 +44,11 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
         process.env.JWT_SECRET as string
       ) as TokenPayload;
 
-      // Simpan payload user ke dalam request agar bisa digunakan oleh controller
-      req.user = decoded;
+      // Convert id to string if it's a number
+      req.user = {
+        ...decoded,
+        id: decoded.id.toString(),
+      };
 
       next(); // Lanjutkan ke controller jika token valid
     } catch (error) {
