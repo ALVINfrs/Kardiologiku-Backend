@@ -1,16 +1,23 @@
 import { Router } from "express";
-import { addHealthData, getHealthData } from "../controllers/healthController";
-import { protect } from "../middleware/authMiddleware"; // Impor middleware kita
+import {
+  addHealthData,
+  getHealthData,
+  getHealthInsights,
+} from "../controllers/healthController";
+import { protect } from "../middleware/authMiddleware";
 
 const router = Router();
 
-// Terapkan middleware 'protect' pada semua route di bawah ini
-// Artinya, hanya user yang sudah login (membawa token) yang bisa mengaksesnya
+// Terapkan middleware protect untuk semua routes
+router.use(protect);
 
-// Route untuk menambahkan data (POST /api/health)
-router.post("/", protect, addHealthData);
+// Route untuk menambahkan data
+router.post("/", addHealthData);
 
-// Route untuk mengambil data (GET /api/health)
-router.get("/", protect, getHealthData);
+// Route untuk mengambil data
+router.get("/", getHealthData);
+
+// Route untuk mendapatkan wawasan kesehatan
+router.get("/insights", getHealthInsights);
 
 export default router;
